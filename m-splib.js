@@ -19,31 +19,46 @@ await loadStatus(w)
 
 let name = await getName(w)
 let count = await getCount(w)
-let dooraeCount = await getDooraeCount(w)
+let books = await getBookList(w)// 
+// let dooraeCount = await getDooraeCount(w)
 
+status = {}
+for (let i in books) {
+	let item = books[i]
+	let library = item[2]
+	if (library in status) {
+		status[library] = status[library] + 1
+	} else {
+		status[library] = 1
+	}
+}
 
 let widget = new ListWidget()
 let titleStack = widget.addStack()
 titleStack.layoutHorizontally()
 titleStack.addText(name)
 titleStack.addText(" ")
-titleStack.addText("도서대여")
+titleStack.addText("도서관")
 
-let loanCountStack = widget.addStack()
-loanCountStack.layoutHorizontally()
-loanCountStack.addText("대출중")
-loanCountStack.addText(": ")
-let loanCount = count - dooraeCount
-t = loanCountStack.addText(loanCount.toString())
-t.font = Font.boldRoundedSystemFont(19)
-loanCountStack.addText("권")
+const lineColor = new Color("58595B", 0.2);
+let line = widget.addStack();
+line.layoutHorizontally();
+line.size = new Size(0, 1);
+line.borderWidth = 0.5;	
+line.borderColor = lineColor;
+line.addSpacer();
+widget.addSpacer(2);
 
-let dooraeStack = widget.addStack()
-dooraeStack.layoutHorizontally()
-dooraeStack.addText("책솔이")
-dooraeStack.addText(": ")
-dooraeStack.addText(dooraeCount)
-dooraeStack.addText("권")
+let font = Font.systemFont(17)
+for(let i in status) {
+	let stack = widget.addStack()
+	stack.font = font
+	stack.layoutHorizontally()
+	stack.addText(i.replace("도서관","").replace("송파","")).font = font
+	stack.addText(": ").font = font
+	let c = status[i]
+	stack.addText(c.toString()).font = Font.boldMonospacedSystemFont(18)
+}
 
 widget.refreshAfterDate = new Date(Date.now() + 1000 * 60 * 10)
 Script.setWidget(widget)
@@ -51,8 +66,8 @@ Script.setWidget(widget)
 
 if (!config.runsInWidget ){			
 	await w.loadURL('https://www.splib.or.kr/mobile')
-	await w.present(true)
-// 	await widget.presentSmall()
+// 	await w.present(true)
+	await widget.presentSmall()
 }
 
 
@@ -96,4 +111,25 @@ async function getDooraeCount(w) {
 	await w.waitForLoad()
 		
 	return await w.evaluateJavaScript("$('.info .themeFC').text()", false)
+}
+
+function getBookList(w) {
+	code = `
+books = []
+items = []
+$(".boardWrap.mobileShow .board-list tbody tr").each(function(index, item) {
+    col = $("th", item).text()
+    if (col === "등록번호" || col === "서명" || col === "소장도서관") {
+        items.push($("td", item).text())
+    }
+    if (col === "상태") {
+        items.push($("td span span", item).text());	
+		books.push(items)
+		items = []
+    }
+})
+
+books
+`
+ return  w.evaluateJavaScript(code, false)
 }
