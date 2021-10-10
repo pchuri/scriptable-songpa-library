@@ -13,7 +13,7 @@ if (args.widgetParameter) {
 const user_id = params[0]
 const user_passwd = params[1]
 
-let w= new WebView();
+let w = new WebView();
 await login(w, user_id, user_passwd);
 await loadStatus(w)
 
@@ -22,15 +22,26 @@ let count = await getCount(w)
 let books = await getBookList(w)// 
 // let dooraeCount = await getDooraeCount(w)
 
+
+let page = 1
 status = {}
-for (let i in books) {
-	let item = books[i]
-	let library = item[2]
-	if (library in status) {
-		status[library] = status[library] + 1
-	} else {
-		status[library] = 1
+while (count > 0) {
+	for (let i in books) {
+		let item = books[i]
+		let library = item[2]
+		if (library in status) {
+			status[library] = status[library] + 1
+		} else {
+			status[library] = 1
+		}
 	}
+
+	if (count > 10) {
+		page = page + 1
+		await movePageOfBookList(w, page)
+		books = await getBookList(w)
+	}
+	count = count - 10
 }
 
 let widget = new ListWidget()
@@ -114,7 +125,7 @@ async function getDooraeCount(w) {
 }
 
 function getBookList(w) {
-	code = `
+	let code = `
 books = []
 items = []
 $(".boardWrap.mobileShow .board-list tbody tr").each(function(index, item) {
@@ -132,4 +143,10 @@ $(".boardWrap.mobileShow .board-list tbody tr").each(function(index, item) {
 books
 `
  return  w.evaluateJavaScript(code, false)
+}
+
+async function movePageOfBookList(w, num) {
+	let code = 'fnList(' + num + ')';
+	await w.evaluateJavaScript(code, false)
+	await w.waitForLoad()
 }
