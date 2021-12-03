@@ -4,8 +4,8 @@ if (args.widgetParameter) {
 	params = args.widgetParameter.split('/')
 } else {
 	params = [
-	"testid",
-	"testpw"
+	"testId",
+	"testPassword"
 	]
 }
 
@@ -16,6 +16,8 @@ const user_passwd = params[1]
 let w = new WebView();
 await login(w, user_id, user_passwd);
 await loadStatus(w)
+
+
 
 let name = await getName(w)
 let count = await getCount(w)
@@ -28,19 +30,20 @@ status = {}
 while (count > 0) {
 	for (let i in books) {
 		let item = books[i]
-		let library = item[2]
+		let library = item[0]
 		if (library in status) {
 			status[library] = status[library] + 1
 		} else {
 			status[library] = 1
 		}
 	}
-
+/*
 	if (count > 10) {
 		page = page + 1
 		await movePageOfBookList(w, page)
 		books = await getBookList(w)
 	}
+*/	
 	count = count - 10
 }
 
@@ -76,9 +79,9 @@ Script.setWidget(widget)
 
 
 if (!config.runsInWidget ){			
-	await w.loadURL('https://www.splib.or.kr/mobile')
-// 	await w.present(true)
-	await widget.presentSmall()
+	await w.loadURL('https://www.splib.or.kr/intro/index.do')
+	await w.present(true)
+//	await widget.presentSmall()
 }
 
 
@@ -87,22 +90,22 @@ Script.complete();
 async function login(webView, user_id, user_passwd)
 {
 
-	await webView.loadURL('https://www.splib.or.kr/mobile/mLogout.do')		
+	await webView.loadURL('https://www.splib.or.kr/intro/program/memberLogout.do')		
 	await webView.waitForLoad()
 	
-	await webView.loadURL('https://www.splib.or.kr/mLoginForm.do')
+	await webView.loadURL('https://www.splib.or.kr/intro/index.do')
 	await webView.waitForLoad()
 	
-	let code = "$('form[name=login_form]').find('input[name=user_id]').val('" + user_id + "');"
-		+ "$('form[name=login_form]').find('input[name=user_pwd]').val('" + user_passwd + "');"
-		+ "loginChk();"
+	let code = "$('#userId').val('" + user_id + "');"
+		+ "$('#password').val('" + user_passwd + "');"
+		+ "$('#loginBtn').click(); 1"
 
 	await 	webView.evaluateJavaScript(code, false)		
 	await webView.waitForLoad()
 }
 
 async function loadStatus(webView) {
-	await webView.loadURL("https://www.splib.or.kr/kolaseek/mylib/loan/loanStatusList.do")
+	await webView.loadURL("https://www.splib.or.kr/intro/program/mypage/loanStatusList.do")
 	await webView.waitForLoad()
 }
 
@@ -111,7 +114,7 @@ async function getName(w) {
 }
 
 async function getCount(w) {
-	return await w.evaluateJavaScript("$('.svc01 .num').text().replace('(연체중)','')", false)
+	return await w.evaluateJavaScript("$('.sortTopWrap .lt .resultTxt strong').text()", false)
 }
 
 async function getDooraeCount(w) {
@@ -128,16 +131,10 @@ function getBookList(w) {
 	let code = `
 books = []
 items = []
-$(".boardWrap.mobileShow .board-list tbody tr").each(function(index, item) {
-    col = $("th", item).text()
-    if (col === "등록번호" || col === "서명" || col === "소장도서관") {
-        items.push($("td", item).text())
-    }
-    if (col === "상태") {
-        items.push($("td span span", item).text());	
-		books.push(items)
-		items = []
-    }
+$(".myArticleWrap.inputType .myArticle-list .infoBox .info strong").each(function(index, item) {
+	 items.push(item.innerText)
+	 books.push(items)
+	 items = []
 })
 
 books
