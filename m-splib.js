@@ -15,11 +15,9 @@ const user_passwd = params[1]
 
 let w = new WebView();
 await login(w, user_id, user_passwd);
+let name = await getName(w)
 await loadStatus(w)
 
-
-
-let name = await getName(w)
 let count = await getCount(w)
 let books = await getBookList(w)// 
 // let dooraeCount = await getDooraeCount(w)
@@ -89,9 +87,9 @@ Script.complete();
 
 async function login(webView, user_id, user_passwd)
 {
-
+	
 	await webView.loadURL('https://www.splib.or.kr/intro/program/memberLogout.do')		
-	await webView.waitForLoad()
+		await webView.waitForLoad()
 	
 	await webView.loadURL('https://www.splib.or.kr/intro/index.do')
 	await webView.waitForLoad()
@@ -110,7 +108,7 @@ async function loadStatus(webView) {
 }
 
 async function getName(w) {
-	 return await w.evaluateJavaScript("$('.title .name').text()", false)
+	 return await w.evaluateJavaScript("$('.centerItem strong').text()", false)
 }
 
 async function getCount(w) {
