@@ -129,10 +129,14 @@ function getBookList(w) {
 	let code = `
 books = []
 items = []
-$(".myArticleWrap.inputType .myArticle-list .infoBox .info strong").each(function(index, item) {
-	 items.push(item.innerText)
-	 books.push(items)
-	 items = []
+$(".myArticleWrap.inputType .myArticle-list .infoBox").each(function(index, item) {
+    bookTitle = $(item).children(".title")[0].innerText
+    if (bookTitle.indexOf("[부록]") < 0) {
+        libraryName = $(item).find("strong")[0].innerText
+        items.push(libraryName)
+	     books.push(items)
+	     items = []
+    }
 })
 
 books
