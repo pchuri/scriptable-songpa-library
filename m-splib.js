@@ -4,7 +4,7 @@ if (args.widgetParameter) {
 	params = args.widgetParameter.split('/')
 } else {
 	params = [
-	"testId",
+  	"testId",
 	"testPassword"
 	]
 }
@@ -16,6 +16,7 @@ const user_passwd = params[1]
 let w = new WebView();
 await login(w, user_id, user_passwd);
 let name = await getName(w)
+let dooraeCount = await getDooraeCount(w)
 await loadStatus(w)
 
 let count = await getCount(w)
@@ -24,7 +25,9 @@ let books = await getBookList(w)//
 
 
 let page = 1
-status = {}
+status = {
+  "책솔이": dooraeCount,
+}
 while (count > 0) {
 	for (let i in books) {
 		let item = books[i]
@@ -116,13 +119,7 @@ async function getCount(w) {
 }
 
 async function getDooraeCount(w) {
-	await w.loadURL('https://www.splib.or.kr/kolaseek/mylib/doorae/dooraeList.do')
-	await w.waitForLoad()
-	
-	await w.evaluateJavaScript("$('#searchStatus').val('0014'); $('#searchBtn').click(); 1", false)	
-	await w.waitForLoad()
-		
-	return await w.evaluateJavaScript("$('.info .themeFC').text()", false)
+	return await w.evaluateJavaScript("$(\"span\", $('a:contains(\"책솔이 \")')).text()", false)
 }
 
 function getBookList(w) {
