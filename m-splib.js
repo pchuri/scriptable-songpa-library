@@ -1,14 +1,31 @@
-let params = null
-
+// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: light-gray; icon-glyph: window-restore;
+let params = ["pchuri", "naru0616"]
 if (args.widgetParameter) {
 	params = args.widgetParameter.split('/')
-} else {
-	params = [
-		"testId",
-		"testPassword"
-	]
 }
 
+const login = async (webView, user_id, user_passwd) => {
+	await webView.loadURL('https://www.splib.or.kr/intro/program/memberLogout.do')
+	await webView.waitForLoad()
+	
+	await webView.loadURL('https://www.splib.or.kr/intro/index.do')
+	await webView.waitForLoad()
+	
+	let code = "$('#userId').val('" + user_id + "');"
+		+ "$('#password').val('" + user_passwd + "');"
+		+ "$('#loginBtn').click(); 1"
+
+	await webView.evaluateJavaScript(code, false)
+	await webView.waitForLoad()
+}
+
+
+const loadStatus = async (webView) => {
+	await webView.loadURL("https://www.splib.or.kr/intro/program/mypage/loanStatusList.do")
+	await webView.waitForLoad()
+}
 
 const user_id = params[0]
 const user_passwd = params[1]
@@ -20,13 +37,13 @@ let dooraeCount = await getDooraeCount(w)
 await loadStatus(w)
 
 let count = await getCount(w)
-let books = await getBookList(w)//
+let books = await getBookList(w)// 
 // let dooraeCount = await getDooraeCount(w)
 
 
 let page = 1
 status = {
-	"책솔이": dooraeCount,
+  "책솔이": dooraeCount,
 }
 while (count > 0) {
 	for (let i in books) {
@@ -38,13 +55,13 @@ while (count > 0) {
 			status[library] = 1
 		}
 	}
-	/*
-        if (count > 10) {
-            page = page + 1
-            await movePageOfBookList(w, page)
-            books = await getBookList(w)
-        }
-    */
+/*
+	if (count > 10) {
+		page = page + 1
+		await movePageOfBookList(w, page)
+		books = await getBookList(w)
+	}
+*/	
 	count = count - 10
 }
 
@@ -59,7 +76,7 @@ const lineColor = new Color("58595B", 0.2);
 let line = widget.addStack();
 line.layoutHorizontally();
 line.size = new Size(0, 1);
-line.borderWidth = 0.5;
+line.borderWidth = 0.5;	
 line.borderColor = lineColor;
 line.addSpacer();
 widget.addSpacer(2);
@@ -79,39 +96,18 @@ widget.refreshAfterDate = new Date(Date.now() + 1000 * 60 * 10)
 Script.setWidget(widget)
 
 
-if (!config.runsInWidget ){
-	await w.loadURL('https://www.splib.or.kr/intro/index.do')
-	await w.present(true)
-//	await widget.presentSmall()
+if (!config.runsInWidget ){			
+// 	await w.loadURL('https://www.splib.or.kr/intro/index.do')// 
+// 	await w.present(true)
+	await widget.presentSmall()
 }
 
 
 Script.complete();
 
-async function login(webView, user_id, user_passwd)
-{
-
-	await webView.loadURL('https://www.splib.or.kr/intro/program/memberLogout.do')
-	await webView.waitForLoad()
-
-	await webView.loadURL('https://www.splib.or.kr/intro/index.do')
-	await webView.waitForLoad()
-
-	let code = "$('#userId').val('" + user_id + "');"
-		+ "$('#password').val('" + user_passwd + "');"
-		+ "$('#loginBtn').click(); 1"
-
-	await 	webView.evaluateJavaScript(code, false)
-	await webView.waitForLoad()
-}
-
-async function loadStatus(webView) {
-	await webView.loadURL("https://www.splib.or.kr/intro/program/mypage/loanStatusList.do")
-	await webView.waitForLoad()
-}
 
 async function getName(w) {
-	return await w.evaluateJavaScript("$('.centerItem strong').text()", false)
+	 return await w.evaluateJavaScript("$('.centerItem strong').text()", false)
 }
 
 async function getCount(w) {
@@ -138,7 +134,7 @@ $(".myArticleWrap.inputType .myArticle-list .infoBox").each(function(index, item
 
 books
 `
-	return  w.evaluateJavaScript(code, false)
+ return  w.evaluateJavaScript(code, false)
 }
 
 async function movePageOfBookList(w, num) {
