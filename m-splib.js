@@ -1,6 +1,3 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: light-gray; icon-glyph: window-restore;
 let params = ["id", "pw"]
 if (args.widgetParameter) {
     params = args.widgetParameter.split('/')
@@ -16,9 +13,46 @@ const loadURL = async (webView, url) => {
     await webView.waitForLoad()
 }
 
-const evalScript = async (web, code, useCallback) => {
+const evalScriptAndWait = async (web, code, useCallback) => {
     await web.evaluateJavaScript(code, useCallback)
     await web.waitForLoad()
+}
+
+const getName = async (w) => {
+    return await w.evaluateJavaScript("$('.centerItem strong').text()", false)
+}
+
+const getCount = async (w) => {
+    return await w.evaluateJavaScript("$('.sortTopWrap .lt .resultTxt strong').text()", false)
+}
+
+const getDooraeCount = async (w) => {
+    return await w.evaluateJavaScript("$(\"span\", $('a:contains(\"책솔이 \")')).text()", false)
+}
+
+const getBookList = (w) => {
+    let code = `
+books = []
+items = []
+$(".myArticleWrap.inputType .myArticle-list .infoBox").each(function(index, item) {
+    bookTitle = $(item).children(".title")[0].innerText
+    if (bookTitle.indexOf("[부록]") < 0) {
+        libraryName = $(item).find("strong")[0].innerText
+        items.push(libraryName)
+	     books.push(items)
+	     items = []
+    }
+})
+
+books
+`
+    return  w.evaluateJavaScript(code, false)
+}
+
+const movePageOfBookList = async (w, num) => {
+    let code = 'fnList(' + num + ')';
+    await w.evaluateJavaScript(code, false)
+    await w.waitForLoad()
 }
 
 const login = async (web, user_id, user_passwd) => {
@@ -28,7 +62,7 @@ const login = async (web, user_id, user_passwd) => {
     let code = "$('#userId').val('" + user_id + "');"
         + "$('#password').val('" + user_passwd + "');"
         + "$('#loginBtn').click(); 1"
-    await evalScript(web, code, false)
+    await evalScriptAndWait(web, code, false)
 }
 
 const user_id = params[0]
@@ -108,41 +142,3 @@ if (!config.runsInWidget ){
 
 
 Script.complete();
-
-
-async function getName(w) {
-    return await w.evaluateJavaScript("$('.centerItem strong').text()", false)
-}
-
-async function getCount(w) {
-    return await w.evaluateJavaScript("$('.sortTopWrap .lt .resultTxt strong').text()", false)
-}
-
-async function getDooraeCount(w) {
-    return await w.evaluateJavaScript("$(\"span\", $('a:contains(\"책솔이 \")')).text()", false)
-}
-
-function getBookList(w) {
-    let code = `
-books = []
-items = []
-$(".myArticleWrap.inputType .myArticle-list .infoBox").each(function(index, item) {
-    bookTitle = $(item).children(".title")[0].innerText
-    if (bookTitle.indexOf("[부록]") < 0) {
-        libraryName = $(item).find("strong")[0].innerText
-        items.push(libraryName)
-	     books.push(items)
-	     items = []
-    }
-})
-
-books
-`
-    return  w.evaluateJavaScript(code, false)
-}
-
-async function movePageOfBookList(w, num) {
-    let code = 'fnList(' + num + ')';
-    await w.evaluateJavaScript(code, false)
-    await w.waitForLoad()
-}
