@@ -1,7 +1,7 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
 // icon-color: light-gray; icon-glyph: window-restore;
-let params = ["pchuri", "naru0616"]
+let params = ["id", "pw"]
 if (args.widgetParameter) {
 	params = args.widgetParameter.split('/')
 }
