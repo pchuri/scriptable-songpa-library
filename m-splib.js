@@ -6,25 +6,29 @@ if (args.widgetParameter) {
 	params = args.widgetParameter.split('/')
 }
 
-const login = async (webView, user_id, user_passwd) => {
-	await webView.loadURL('https://www.splib.or.kr/intro/program/memberLogout.do')
-	await webView.waitForLoad()
-	
-	await webView.loadURL('https://www.splib.or.kr/intro/index.do')
-	await webView.waitForLoad()
-	
-	let code = "$('#userId').val('" + user_id + "');"
-		+ "$('#password').val('" + user_passwd + "');"
-		+ "$('#loginBtn').click(); 1"
+const SPLIB_URL = "https://www.splib.or.kr"
+const LOGOUT_URL = SPLIB_URL + "/intro/program/memberLogout.do"
+const INDEX_URL = SPLIB_URL + "/intro/index.do"
+const LOAN_URL = SPLIB_URL + "/intro/program/mypage/loanStatusList.do"
 
-	await webView.evaluateJavaScript(code, false)
-	await webView.waitForLoad()
+const loadURL = async (webView, url) => {
+  await webView.loadURL(url)
+  await webView.waitForLoad()
 }
 
+const evalScript = async (web, code, useCallback) => {
+  await web.evaluateJavaScript(code, useCallback)
+  await web.waitForLoad()
+}
 
-const loadStatus = async (webView) => {
-	await webView.loadURL("https://www.splib.or.kr/intro/program/mypage/loanStatusList.do")
-	await webView.waitForLoad()
+const login = async (web, user_id, user_passwd) => {
+  await loadURL(web, LOGOUT_URL)
+  await loadURL(web, INDEX_URL)
+	
+  let code = "$('#userId').val('" + user_id + "');"
+    + "$('#password').val('" + user_passwd + "');"
+    + "$('#loginBtn').click(); 1"
+  await evalScript(web, code, false)
 }
 
 const user_id = params[0]
@@ -34,7 +38,7 @@ let w = new WebView();
 await login(w, user_id, user_passwd);
 let name = await getName(w)
 let dooraeCount = await getDooraeCount(w)
-await loadStatus(w)
+await loadURL(w, LOAN_URL)
 
 let count = await getCount(w)
 let books = await getBookList(w)// 
